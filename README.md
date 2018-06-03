@@ -58,6 +58,10 @@ The 2nd word is the condition verb, followed by a value. The following verbs are
 - *contains* - substring match: `to contains example`
 - *starts-with* - true if the value starts with the value: `to starts-with tes`
 - *ends-with* - true if the value ends with the value: `to ends-with .com`
+- *is* - exact match: to is `test@example.com`
+- *contains* - substring match: to contains `example`
+- *starts-with* - true if the valus starts with the value: to starts-with `tes`
+- *ends-with* - true if the valus ends with the value: to ends-with `.com`
 - *matches* - regular expression match: to matches `.+@example.com`
 - *not-xxxx* - uses the verbs above like *not-is* to invert the condition
 
