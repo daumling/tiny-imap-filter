@@ -89,7 +89,7 @@ This section contains the settings for the email and other global settings.
 - *to*: the To (recipient) field for error emails
 - *cc* and *bcc*: optional files for more email addresses
 - *subject*: The subject, also used as the headline
-- *domains*: This is a space-separated list of domains that should be checked. Email addresses that do not match these domains are ignored.
+- *domains*: This is a space-separated list of domains that should be checked. Email addresses that do not match these domains are ignored. If you leave the list empty or moit it completely, all email addresses will be subject to the rules.
 
 #### [connection]
 
