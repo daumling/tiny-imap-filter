@@ -18,6 +18,7 @@
  * config - dump the parsed INI file
  */
 $conf = null;
+$domains = [];
 $connections = [];
 
 $globalRules = (object) ['rules' => []];
@@ -74,6 +75,8 @@ parseIni();
 if ($debug)
 	echo '<pre>';
 if ($debug === "config") {
+	echo "Domains:\n";
+	var_dump($domains);
 	echo "Global Rules:\n";
 	var_dump($globalRules);
 	echo "\nConnections:\n";
@@ -87,10 +90,12 @@ sendErrors();
 die;
 
 function parseIni() {
-	global $conf, $connections, $globalRules;
+	global $conf, $domains, $connections, $globalRules;
 	$conf = parse_ini_file(__DIR__.'/imapfilter.ini', true);
 	if (!$conf)
 		sendError('Cannot read imapfilter.ini');
+	if (isset($conf['config']['domains']))
+		$domains = preg_split('/\s+/', $conf['config']['domains']);
 	// hosts
 	foreach ($conf as $name => $section) {
 		if ($name === 'config' || $name === 'rules' || substr($name, -6) === '.rules')
@@ -204,25 +209,39 @@ function checkMailbox($provider) {
 		foreach ($globalRules->rules as $rule) {
 			$rule->checked = false;
 		}
+		$ok = false;
 		// 1) Local whitelists
 		foreach ($provider->rules as $rule) {
-			if (!count($rule->actions) && applyRule($provider, $id, $hdr, $rule))
+			if (!count($rule->actions) && applyRule($provider, $id, $hdr, $rule)) {
+				$ok = true;
 				break;
+			}
 		}
+		if ($ok)
+			continue;
 		// 2) Global whitelists
 		foreach ($globalRules->rules as $rule) {
-			if (!count($rule->actions) && applyRule($globalRules, $id, $hdr, $rule))
+			if (!count($rule->actions) && applyRule($globalRules, $id, $hdr, $rule)) {
+				$ok = true;
 				break;
-		}
+			}		}
+		if ($ok)
+			continue;
 		// 3) Local rules
 		foreach ($provider->rules as $rule) {
-			if (count($rule->actions) && applyRule($provider, $id, $hdr, $rule))
+			if (count($rule->actions) && applyRule($provider, $id, $hdr, $rule)) {
+				$ok = true;
 				break;
+			}
 		}
+		if ($ok)
+			continue;
 		// 4) Global rules
 		foreach ($globalRules->rules as $rule) {
-			if (count($rule->actions) && applyRule($globalRules, $id, $hdr, $rule))
+			if (count($rule->actions) && applyRule($globalRules, $id, $hdr, $rule)) {
+				$ok = true;
 				break;
+			}
 		}
 	}
 	imap_expunge($provider->strm);
@@ -240,6 +259,7 @@ function getHdrText($fieldValue) {
 }
 
 function applyRule($provider, $id, $hdr, $rule) {
+	global $domains;
 	if ($rule->checked)
 		return false;
 	$rule->checked = true;
@@ -263,6 +283,8 @@ function applyRule($provider, $id, $hdr, $rule) {
 					return true;
 			}
 			else {
+				if (count($domains) && !in_array($entry->host, $domains))
+					continue;
 				$test = $entry->mailbox . '@' . $entry->host;
 				if (applySingle($provider, $id, $hdr, $test, $rule))
 					return true;
@@ -274,6 +296,18 @@ function applyRule($provider, $id, $hdr, $rule) {
 		return applySingle($provider, $id, $hdr, getHdrText($fieldValue), $rule);
 }
 
+/**
+ * Apply a single rule.
+ * @global string $debug
+ * @global array $ruleOps
+ * @global array $actionOps
+ * @param stdObj $provider - provider data
+ * @param int $id - message ID
+ * @param stdObj $hdr - message headers
+ * @param string $test - value to test
+ * @param stdObj $rule - the rule itself
+ * @return boolean
+ */
 function applySingle($provider, $id, $hdr, $test, $rule) {
 	global $debug, $ruleOps, $actionOps;
 	if (!$ruleOps[$rule->op]($test, $rule->value)) {
@@ -284,7 +318,7 @@ function applySingle($provider, $id, $hdr, $test, $rule) {
 	if ($debug == 'match')
 		echo '  <span style="color:green">'.$rule->field.' '.$rule->op.' '.$rule->value.' matches '.$test."</span>\n";
 	if ($debug && !count($rule->actions))
-		echo "  whitelisted";
+		echo "  whitelisted\n";
 	foreach ($rule->actions as $action) {
 		if ($debug)
 			echo '  ' . implode(' ', $action)."\n";

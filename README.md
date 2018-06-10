@@ -44,11 +44,13 @@ Condition and action verbs are case insensitive, while field names, values and m
 
 The field name is the field name of the email header, case-sensitive. The email header fields such as "from", "to", "cc" and "bcc" have two subfields "mailbox", "host" and "personal", where "personal" is the full name is present. Address these subfields with a dot, like "from.mailbox" to access the sender name without the  "@domain.tld" field. If you use email header fields without a subfield, the email address is used.
 
-Example: the value "<My Name> name@example.com" in the "from" field is available as:
+Fields that are actually arrays becasue there may e.g. be multiple recipients may cause problems if a rule happens to match an email address that is part of that array. Therefore, you can use the config setting "domains" to define a list of domains that rules apply to. See below for more info.
+
+Example: the value "\<My Name\> name@example.com" in the "from" field is available as:
 ```
 from.mailbox = "name"
 from.host = "example.com"
-from.personal = "<My Name> name@example.com"
+from.personal = "My Name"
 from = "name@example.com"
 ```
 Please refer to the PHP function [imap_headerinfo()](http://php.net/manual/en/function.imap-headerinfo.php) for a full list of field names and values.
@@ -81,12 +83,13 @@ golf2     = "subject contains Golf move-to Golf"
 ```
 #### [config]
 
-This section contains the settings for the email.
+This section contains the settings for the email and other global settings.
 
 - *from*: the sender
 - *to*: the To (recipient) field for error emails
 - *cc* and *bcc*: optional files for more email addresses
 - *subject*: The subject, also used as the headline
+- *domains*: This is a space-separated list of domains that should be checked. Email addresses that do not match these domains are ignored.
 
 #### [connection]
 
@@ -95,7 +98,7 @@ Connection sections have freely definable names. They contain the data required 
 - *user*: the username
 - *pass*: the password
 - *folder*: This optional value takes the folder to operate upon. If not supplies, "INBOX" is assumed.
-- *search*: This is the IMAP search expression that should be used on that connection. This is based on the possible IMAP search verbs described at the PHP function [imap_search()](http://php.net/manual/en/function.imap-search.php). The string is case insensitive, and you can use any date speficier that the PHP function [DateTime::modify()](http://php.net/manual/en/datetime.modify.php) supports as a word; it will be replaced with the correct date format. If you, for example, use the string "SINCE yesterday", all emails headers that have arrived since yesterday would be fetched. If this value is omitted, the search verb is "UNSEEN", which returns unread messages.
+- *search*: This is the IMAP search expression that should be used on that connection. This is based on the possible IMAP search verbs described at the PHP function [imap_search()](http://php.net/manual/en/function.imap-search.php). The string is case insensitive, and you can use any date speficier that the PHP function [DateTime::modify()](http://php.net/manual/en/datetime.modify.php) supports as a word; it will be replaced with the correct date format. If you, for example, use the string "SINCE yesterday", all emails headers that have arrived since yesterday would be fetched. If this value is omitted, the search verb is "UNSEEN", which returns unread messages. Please keep in mind to use single quote3s for multi-word expression as in "SINCE '-3 days'".
 
 #### [connection.rules]
 
