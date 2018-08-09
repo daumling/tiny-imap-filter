@@ -183,7 +183,7 @@ function checkMailbox($provider) {
 	if (strstr('/imap', $host) === false)
 		$host .= '/imap';
 			
-	$provider->strm = imap_open('{'.$host.'}'.$provider->folder, $provider->user, $provider->pass);
+	$provider->strm = @imap_open('{'.$host.'}'.$provider->folder, $provider->user, $provider->pass);
 	if (!$provider->strm)
 		sendErrors(['Cannot connect to '.$provider->host]);
 	$ids = imap_search($provider->strm, $provider->search);
@@ -283,7 +283,7 @@ function applyRule($provider, $id, $hdr, $rule) {
 					return true;
 			}
 			else {
-				if (count($domains) && !in_array($entry->host, $domains))
+				if (count($domains) && isset($entry->host) && !in_array($entry->host, $domains))
 					continue;
 				$test = $entry->mailbox . '@' . $entry->host;
 				if (applySingle($provider, $id, $hdr, $test, $rule))
