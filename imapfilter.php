@@ -66,7 +66,7 @@ ini_set('error_reporting', E_ALL);
 
 $debug = false;
 if (isset($_SERVER['HTTP_USER_AGENT'])) {
-	$arr = parse_str($_SERVER['QUERY_STRING']);
+	parse_str($_SERVER['QUERY_STRING'], $arr);
 	if (isset($arr['debug']))
 		$debug = isset($arr['debug']);
 }
@@ -93,7 +93,7 @@ function parseIni() {
 	global $conf, $domains, $connections, $globalRules;
 	$conf = parse_ini_file(__DIR__.'/imapfilter.ini', true);
 	if (!$conf)
-		sendError('Cannot read imapfilter.ini');
+		sendErrors('Cannot read imapfilter.ini');
 	if (isset($conf['config']['domains']))
 		$domains = preg_split('/\s+/', $conf['config']['domains']);
 	// hosts

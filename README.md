@@ -9,7 +9,7 @@ There is already such a project [imapfilter](https://github.com/lefcha/imapfilte
 
 ### Description
 
-tiny-imap-filter is a small PHP program that ready a file in PHP INI format and processes the ruls found in that file. You can define a good set of really simple
+tiny-imap-filter is a small PHP program that reads a file in PHP INI format and processes the rules found in that file. You can define a good set of really simple
 rules for various email providers, mailboxes and folders. The file `imapfilter.php` can be used as a command-line utility or as a Web page. The latter lets you debug the rules before actually applying them.
 
 In case of errors, the program sends an email with a list of the errors.
@@ -17,7 +17,7 @@ In case of errors, the program sends an email with a list of the errors.
 ### Browser Usage
 
 As a web page, simply call the script from a browser. Without any arguments, the script acts just as if called from the command line. With an argument `?debug=`,
-emails are not modified, and debugging output are echoed back to the browser.
+emails are not modified, and debugging output is echoed back to the browser.
 
 There are three debugging options available:
 
